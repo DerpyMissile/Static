@@ -10,7 +10,7 @@ sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
 sock.connect((target_address, port))
 
 # Specify the audio file path
-audio_file = "SoundsForStatic\metal-pipe-falling-sound-effect-By-tuna.voicemod.net.mp3"
+audio_file = "SoundsForStatic\metal-pipe-falling-sound-effect-By-tuna.voicemod.net.wav"
 
 # Open the audio file
 wf = wave.open(audio_file, 'rb')
