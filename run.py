@@ -1,10 +1,20 @@
 import bluetooth
 
-target_address = "C8:84:47:59:BE:65"
+target_address = "00:23:01:00:00:45"
+port = 1  # Default RFCOMM port
 
-services = bluetooth.find_service(address=target_address)
-for service in services:
-    print("Service Name:", service["name"])
-    print("Protocol:", service["protocol"])
-    print("Port:", service["port"])
-    print("--------------------")
+# Connect to the device
+sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
+sock.connect((target_address, port))
+
+# Send commands to the device
+# Example: Send 'play' command to start playing music
+command = b'play'
+sock.send(command)
+
+# Receive data from the device
+data = sock.recv(1024)
+print("Received data:", data)
+
+# Close the connection
+sock.close()
