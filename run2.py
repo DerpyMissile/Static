@@ -1,10 +1,12 @@
 import bluetooth
 
+print("hello?")
 target_address = "00:23:01:00:00:45"
 
-services = bluetooth.find_service(address=target_address)
-for service in services:
-    print("Service Name:", service["name"])
-    print("Protocol:", service["protocol"])
-    print("Port:", service["port"])
+nearby_devices = bluetooth.discover_devices()
+for addr in nearby_devices:
+    print("Device:", addr, bluetooth.lookup_name(addr))
+    print("Service Name:", addr["name"])
+    print("Protocol:", addr["protocol"])
+    print("Port:", addr["port"])
     print("--------------------")

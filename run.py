@@ -1,20 +1,47 @@
 import bluetooth
+import pyaudio
+import wave
 
 target_address = "00:23:01:00:00:45"
 port = 1  # Default RFCOMM port
 
-# Connect to the device
+# Connect to the Bluetooth speaker
 sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
 sock.connect((target_address, port))
 
-# Send commands to the device
-# Example: Send 'play' command to start playing music
-command = b'play'
-sock.send(command)
+# Specify the audio file path
+audio_file = "SoundsForStatic\metal-pipe-falling-sound-effect-By-tuna.voicemod.net.mp3"
 
-# Receive data from the device
-data = sock.recv(1024)
-print("Received data:", data)
+# Open the audio file
+wf = wave.open(audio_file, 'rb')
 
-# Close the connection
+# Initialize PyAudio
+audio = pyaudio.PyAudio()
+
+# Open a stream to play the audio
+stream = audio.open(format=audio.get_format_from_width(wf.getsampwidth()),
+                    channels=wf.getnchannels(),
+                    rate=wf.getframerate(),
+                    output=True)
+
+# Read audio data and play it in chunks
+chunk = 1024
+data = wf.readframes(chunk)
+
+while data:
+    # Send audio data to the Bluetooth speaker
+    sock.send(data)
+
+    # Play audio data through the output stream
+    stream.write(data)
+
+    # Read the next chunk of audio data
+    data = wf.readframes(chunk)
+
+# Close the stream and terminate PyAudio
+stream.stop_stream()
+stream.close()
+audio.terminate()
+
+# Close the Bluetooth connection
 sock.close()
