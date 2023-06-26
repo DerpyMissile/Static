@@ -7,6 +7,14 @@ port = 1  # Default RFCOMM port
 
 # Connect to the Bluetooth speaker
 sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
+
+try:
+    # Try to close the socket
+    sock.close()
+    print("Socket closed successfully")
+except bluetooth.btcommon.BluetoothError as e:
+    print("Error while closing socket:", e)
+
 sock.connect((target_address, port))
 
 # Specify the audio file path
