@@ -1,55 +1,55 @@
 import bluetooth
 import pyaudio
-import wave
+from pydub import AudioSegment
 
 target_address = "00:23:01:00:00:45"
 port = 1  # Default RFCOMM port
 
 # Connect to the Bluetooth speaker
 sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
-
-try:
-    # Try to close the socket
-    sock.close()
-    print("Socket closed successfully")
-except bluetooth.btcommon.BluetoothError as e:
-    print("Error while closing socket:", e)
-
 sock.connect((target_address, port))
 
 # Specify the audio file path
-audio_file = "SoundsForStatic\metal-pipe-falling-sound-effect-By-tuna.voicemod.net.wav"
+audio_file = "SoundsForStatic/metal-pipe-falling-sound-effect-By-tuna.voicemod.net.wav"
 
-# Open the audio file
-wf = wave.open(audio_file, 'rb')
+# Load the MP3 file using pydub
+audio = AudioSegment.from_mp3(audio_file)
+
+# Convert the audio to WAV format
+audio = audio.set_frame_rate(44100).set_channels(2)
+wav_data = audio.raw_data
 
 # Initialize PyAudio
-audio = pyaudio.PyAudio()
+pyaudio_instance = pyaudio.PyAudio()
 
 # Open a stream to play the audio
-stream = audio.open(format=audio.get_format_from_width(wf.getsampwidth()),
-                    channels=wf.getnchannels(),
-                    rate=wf.getframerate(),
-                    output=True)
+stream = pyaudio_instance.open(
+    format=pyaudio_instance.get_format_from_width(audio.sample_width),
+    channels=audio.channels,
+    rate=audio.frame_rate,
+    output=True
+)
 
-# Read audio data and play it in chunks
-chunk = 1024
-data = wf.readframes(chunk)
+# Split the audio into chunks and play them
+chunk_size = 1024
+offset = 0
 
-while data:
+while offset < len(wav_data):
+    # Get the chunk to play
+    chunk = wav_data[offset:offset+chunk_size]
+
     # Send audio data to the Bluetooth speaker
-    sock.send(data)
+    sock.send(chunk)
 
     # Play audio data through the output stream
-    stream.write(data)
+    stream.write(chunk)
 
-    # Read the next chunk of audio data
-    data = wf.readframes(chunk)
+    offset += chunk_size
 
 # Close the stream and terminate PyAudio
 stream.stop_stream()
 stream.close()
-audio.terminate()
+pyaudio_instance.terminate()
 
 # Close the Bluetooth connection
 sock.close()
